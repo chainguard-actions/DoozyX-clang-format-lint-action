@@ -1,0 +1,31 @@
+name: Test basic usage - well-formatted code passes
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create a well-formatted C++ file in workspace
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/test-src"
+          # Write LLVM-style formatted C++ (2-space indent, braces on same line)
+          printf '#include <iostream>\n\nint main() {\n  std::cout << "Hello, World!" << std::endl;\n  return 0;\n}\n' \
+            > "$GITHUB_WORKSPACE/test-src/hello.cpp"
+          echo "File content:"
+          cat "$GITHUB_WORKSPACE/test-src/hello.cpp"
+
+      - name: Run clang-format lint on well-formatted code
+        id: action
+        uses: .
+        with:
+          source: test-src
+          extensions: 'cpp'
+          clangFormatVersion: '18'
+          style: 'LLVM'
+
+      - name: Assert action succeeded (no formatting issues)
+        run: |
+          echo "Action completed successfully - code is properly formatted"
+          echo "PASS"

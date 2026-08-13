@@ -1,0 +1,38 @@
+name: Test inplace mode fixes files
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create an unformatted C++ file in workspace
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/test-inplace-src"
+          # Write a file with bad formatting
+          printf '#include <iostream>\nint main(){std::cout<<"Hello"<<std::endl;return 0;}\n' \
+            > "$GITHUB_WORKSPACE/test-inplace-src/bad.cpp"
+          echo "Before formatting:"
+          cat "$GITHUB_WORKSPACE/test-inplace-src/bad.cpp"
+
+      - name: Run clang-format lint with inplace=true (should succeed and fix files)
+        id: action
+        uses: .
+        with:
+          source: test-inplace-src
+          extensions: 'cpp'
+          clangFormatVersion: '18'
+          style: 'LLVM'
+          inplace: 'true'
+
+      - name: Assert action succeeded and file was reformatted in-place
+        run: |
+          echo "After formatting:"
+          cat "$GITHUB_WORKSPACE/test-inplace-src/bad.cpp"
+          # The file should now be formatted - the compact one-liner should be gone
+          if grep -q 'int main(){' "$GITHUB_WORKSPACE/test-inplace-src/bad.cpp"; then
+            echo "FAIL: file was not reformatted in-place"
+            exit 1
+          fi
+          echo "PASS: file was reformatted in-place"

@@ -1,0 +1,43 @@
+name: Test inplace fix mode - files are fixed in place
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create poorly formatted C++ source file for inplace fix
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/tests/tmp-inplace"
+          # Write a badly formatted file (no spaces, 4-space indent, brace on new line)
+          printf '#include <iostream>\nint main(){\n    std::cout<<"Hello"<<std::endl;\n    return 0;\n}\n' \
+            > "$GITHUB_WORKSPACE/tests/tmp-inplace/fix_me.cpp"
+          echo "Before fix:"
+          cat "$GITHUB_WORKSPACE/tests/tmp-inplace/fix_me.cpp"
+
+      - name: Run clang-format with inplace fix
+        id: lint
+        uses: .
+        with:
+          source: tests/tmp-inplace
+          extensions: cpp
+          clangFormatVersion: '18'
+          style: 'Google'
+          inplace: True
+
+      - name: Assert inplace fix succeeded and file was modified
+        run: |
+          echo "After fix:"
+          cat "$GITHUB_WORKSPACE/tests/tmp-inplace/fix_me.cpp"
+          CONTENT=$(cat "$GITHUB_WORKSPACE/tests/tmp-inplace/fix_me.cpp")
+          if [ -z "$CONTENT" ]; then
+            echo "FAIL: file is empty after inplace fix"
+            exit 1
+          fi
+          # After Google-style formatting, should use 2-space indentation
+          if echo "$CONTENT" | grep -q "    std::"; then
+            echo "FAIL: file still has 4-space indentation after Google-style fix"
+            exit 1
+          fi
+          echo "PASS: file was processed by inplace fix and indentation was corrected"

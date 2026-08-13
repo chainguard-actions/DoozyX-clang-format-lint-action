@@ -1,0 +1,33 @@
+name: Test exclude - excluded folders are not checked
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create directory structure with good and bad formatted files
+        run: |
+          # Good file in checked directory (copy from committed fixture)
+          mkdir -p "$GITHUB_WORKSPACE/tests/tmp-exclude/src"
+          cp "$GITHUB_WORKSPACE/tests/fixtures/src-good/hello.cpp" \
+             "$GITHUB_WORKSPACE/tests/tmp-exclude/src/good.cpp"
+          # Bad file in excluded directory
+          mkdir -p "$GITHUB_WORKSPACE/tests/tmp-exclude/vendor"
+          printf '#include <iostream>\nint main(){std::cout<<"bad"<<std::endl;return 0;}\n' \
+            > "$GITHUB_WORKSPACE/tests/tmp-exclude/vendor/bad.cpp"
+
+      - name: Run clang-format lint with vendor excluded via glob pattern
+        id: lint
+        uses: .
+        with:
+          source: tests/tmp-exclude
+          exclude: '*/vendor'
+          extensions: cpp
+          clangFormatVersion: '18'
+          style: 'Google'
+
+      - name: Assert lint passed (bad file was excluded)
+        run: |
+          echo "PASS: lint succeeded because the badly formatted vendor directory was excluded"

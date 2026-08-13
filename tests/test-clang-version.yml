@@ -1,0 +1,31 @@
+name: Test specific clang-format version
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create a well-formatted C file in workspace
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/test-version-src"
+          # Write LLVM-style formatted C (2-space indent)
+          printf '#include <stdio.h>\n\nint main() {\n  printf("Hello, World!\\n");\n  return 0;\n}\n' \
+            > "$GITHUB_WORKSPACE/test-version-src/hello.c"
+          echo "File content:"
+          cat "$GITHUB_WORKSPACE/test-version-src/hello.c"
+
+      - name: Run clang-format lint with version 14
+        id: action
+        uses: .
+        with:
+          source: test-version-src
+          extensions: 'c'
+          clangFormatVersion: '14'
+          style: 'LLVM'
+
+      - name: Assert action succeeded with version 14
+        run: |
+          echo "Action completed successfully using clang-format version 14"
+          echo "PASS"
