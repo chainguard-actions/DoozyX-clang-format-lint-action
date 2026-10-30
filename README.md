@@ -6,9 +6,9 @@ Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at
 
 ## Versions
 
-| Version | Tag | Upstream commit |
-|---------|-----|-----------------|
-| v0.20 | [`v0.20`](https://github.com/chainguard-actions/DoozyX-clang-format-lint-action/tree/v0.20) | [`bcb4eb2`](https://github.com/DoozyX/clang-format-lint-action/commit/bcb4eb2cb0d707ee4f3e5cc3b456eb075f12cf73) |
+| Version | Tag | Upstream commit | Hardening report |
+|---------|-----|-----------------|------------------|
+| v0.20 | [`v0.20`](https://github.com/chainguard-actions/DoozyX-clang-format-lint-action/tree/v0.20) | [`bcb4eb2`](https://github.com/DoozyX/clang-format-lint-action/commit/bcb4eb2cb0d707ee4f3e5cc3b456eb075f12cf73) | [`HARDENING.md`](https://github.com/chainguard-actions/DoozyX-clang-format-lint-action/blob/v0.20/HARDENING.md) |
 
 ## Privacy
 
